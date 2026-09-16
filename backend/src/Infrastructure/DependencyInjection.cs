@@ -17,20 +17,32 @@ public static class DependencyInjection
         services.AddScoped<AuditSaveChangesInterceptor>();
 
         // DbContext
+        var useSqlite = configuration.GetValue<bool>("UseSqlite", true);
         var connectionString = configuration.GetConnectionString("DefaultConnection") 
-            ?? "Server=localhost;Database=SistemaGranjaPorcinaDb;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True";
+            ?? "Data Source=SistemaGranjaPorcina.db";
 
         services.AddDbContext<ApplicationDbContext>((sp, options) =>
         {
             var softDeleteInterceptor = sp.GetRequiredService<SoftDeleteInterceptor>();
             var auditInterceptor = sp.GetRequiredService<AuditSaveChangesInterceptor>();
 
-            options.UseSqlServer(connectionString, sqlOptions =>
+            if (useSqlite)
             {
-                sqlOptions.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName);
-                sqlOptions.EnableRetryOnFailure(3, TimeSpan.FromSeconds(5), null);
-            })
-            .AddInterceptors(softDeleteInterceptor, auditInterceptor);
+                options.UseSqlite(connectionString, sqliteOptions =>
+                {
+                    sqliteOptions.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName);
+                })
+                .AddInterceptors(softDeleteInterceptor, auditInterceptor);
+            }
+            else
+            {
+                options.UseSqlServer(connectionString, sqlOptions =>
+                {
+                    sqlOptions.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName);
+                    sqlOptions.EnableRetryOnFailure(3, TimeSpan.FromSeconds(5), null);
+                })
+                .AddInterceptors(softDeleteInterceptor, auditInterceptor);
+            }
         });
 
         services.AddScoped<IApplicationDbContext>(sp => sp.GetRequiredService<ApplicationDbContext>());
