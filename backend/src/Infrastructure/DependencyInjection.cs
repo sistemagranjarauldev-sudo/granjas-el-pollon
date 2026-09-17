@@ -17,16 +17,34 @@ public static class DependencyInjection
         services.AddScoped<AuditSaveChangesInterceptor>();
 
         // DbContext
-        var useSqlite = configuration.GetValue<bool>("UseSqlite", true);
+        var provider = configuration.GetValue<string>("DatabaseProvider") ?? "";
         var connectionString = configuration.GetConnectionString("DefaultConnection") 
             ?? "Data Source=SistemaGranjaPorcina.db";
+        var useSqlite = configuration.GetValue<bool>("UseSqlite", false);
+
+        var isPostgres = provider.Equals("PostgreSql", StringComparison.OrdinalIgnoreCase) ||
+                         provider.Equals("Postgres", StringComparison.OrdinalIgnoreCase) ||
+                         provider.Equals("Supabase", StringComparison.OrdinalIgnoreCase) ||
+                         connectionString.Contains("Host=", StringComparison.OrdinalIgnoreCase) ||
+                         connectionString.Contains("Username=postgres", StringComparison.OrdinalIgnoreCase) ||
+                         connectionString.StartsWith("postgresql://", StringComparison.OrdinalIgnoreCase) ||
+                         connectionString.StartsWith("postgres://", StringComparison.OrdinalIgnoreCase);
 
         services.AddDbContext<ApplicationDbContext>((sp, options) =>
         {
             var softDeleteInterceptor = sp.GetRequiredService<SoftDeleteInterceptor>();
             var auditInterceptor = sp.GetRequiredService<AuditSaveChangesInterceptor>();
 
-            if (useSqlite)
+            if (isPostgres)
+            {
+                options.UseNpgsql(connectionString, npgsqlOptions =>
+                {
+                    npgsqlOptions.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName);
+                    npgsqlOptions.EnableRetryOnFailure(3, TimeSpan.FromSeconds(5), null);
+                })
+                .AddInterceptors(softDeleteInterceptor, auditInterceptor);
+            }
+            else if (useSqlite || connectionString.EndsWith(".db", StringComparison.OrdinalIgnoreCase))
             {
                 options.UseSqlite(connectionString, sqliteOptions =>
                 {

@@ -1,0 +1,15 @@
+{
+  "name": "sistema-granja-porcina",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Sistema Integral de Gestión para Granja Porcina",
+  "scripts": {
+    "dev": "npm --prefix frontend run dev",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "dev:backend": "dotnet run --project backend/src/Api/Api.csproj",
+    "build": "npm --prefix frontend run build",
+    "build:frontend": "npm --prefix frontend run build",
+    "build:backend": "dotnet build backend/SistemaGranja.sln",
+    "test:backend": "dotnet test backend/SistemaGranja.sln"
+  }
+}

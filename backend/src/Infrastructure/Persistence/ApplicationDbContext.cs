@@ -37,5 +37,20 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     {
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+
+        // Adaptar filtros de índices según el motor de BD (PostgreSQL vs SQL Server/SQLite)
+        if (Database.IsNpgsql())
+        {
+            foreach (var entity in modelBuilder.Model.GetEntityTypes())
+            {
+                foreach (var index in entity.GetIndexes())
+                {
+                    if (index.GetFilter() == "IsDeleted = 0")
+                    {
+                        index.SetFilter("\"IsDeleted\" = false");
+                    }
+                }
+            }
+        }
     }
 }
