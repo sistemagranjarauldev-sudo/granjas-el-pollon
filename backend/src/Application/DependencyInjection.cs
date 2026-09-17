@@ -19,6 +19,9 @@ public static class DependencyInjection
         services.AddScoped<IFarmStructureService, FarmStructureService>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IAuditService, AuditService>();
+        services.AddScoped<SistemaGranja.Application.Modules.Pigs.Services.IPigsService, SistemaGranja.Application.Modules.Pigs.Services.PigsService>();
+        services.AddScoped<SistemaGranja.Application.Modules.Batches.Services.IBatchesService, SistemaGranja.Application.Modules.Batches.Services.BatchesService>();
+        services.AddScoped<SistemaGranja.Application.Modules.Weighings.Services.IWeighingsService, SistemaGranja.Application.Modules.Weighings.Services.WeighingsService>();
 
         return services;
     }

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -6,12 +6,13 @@ import { Modal } from '../../components/ui/Modal';
 import { Input } from '../../components/ui/Input';
 import { Select } from '../../components/ui/Select';
 import { Button } from '../../components/ui/Button';
+import { Alert } from '../../components/ui/Alert';
 import { Pen, PenType, PenStatus } from '../../types';
 
 const penSchema = z.object({
   code: z.string().min(1, 'El código es obligatorio').max(50),
   penType: z.coerce.number().min(1, 'Seleccione un tipo de corral'),
-  maxCapacity: z.coerce.number().min(1, 'La capacidad debe ser al menos 1 animal'),
+  maxCapacity: z.coerce.number().min(1, 'La capacidad mínima es 1'),
   dimensionsM2: z.coerce.number().optional(),
   status: z.coerce.number().optional(),
 });
@@ -36,23 +37,24 @@ export const PenModal: React.FC<PenModalProps> = ({
   isLoading,
 }) => {
   const isEditing = !!pen;
+  const [serverError, setServerError] = useState<string | null>(null);
 
   const penTypeOptions = [
     { value: PenType.IndividualGestationCrate, label: 'Jaula Individual de Gestación' },
     { value: PenType.GroupGestationPen, label: 'Corral Grupal de Gestación' },
-    { value: PenType.FarrowingCrate, label: 'Jaula / Sala de Maternidad y Parto' },
-    { value: PenType.NurseryPen, label: 'Corral de Destete / Nursery / Batería' },
-    { value: PenType.GrowerFinisherPen, label: 'Corral de Engorde / Cebo' },
+    { value: PenType.FarrowingCrate, label: 'Jaula de Maternidad / Paridera' },
+    { value: PenType.NurseryPen, label: 'Corral de Destete / Recría' },
+    { value: PenType.GrowerFinisherPen, label: 'Corral de Crecimiento / Ceba' },
     { value: PenType.BoarPen, label: 'Corral de Verraco' },
-    { value: PenType.HospitalPen, label: 'Corral de Enfermería / Aislamiento' },
+    { value: PenType.HospitalPen, label: 'Corral Hospital' },
     { value: PenType.QuarantinePen, label: 'Corral de Cuarentena' },
   ];
 
   const statusOptions = [
-    { value: PenStatus.Empty, label: 'Vacío / Disponible' },
+    { value: PenStatus.Empty, label: 'Vacío (Disponible)' },
     { value: PenStatus.Occupied, label: 'Ocupado' },
     { value: PenStatus.Maintenance, label: 'En Mantenimiento' },
-    { value: PenStatus.Sanitizing, label: 'En Vacío Sanitario / Desinfección' },
+    { value: PenStatus.Sanitizing, label: 'En Sanitización / Vacío Sanitario' },
   ];
 
   const {
@@ -66,18 +68,19 @@ export const PenModal: React.FC<PenModalProps> = ({
       code: '',
       penType: PenType.IndividualGestationCrate,
       maxCapacity: 1,
-      dimensionsM2: 2.5,
+      dimensionsM2: undefined,
       status: PenStatus.Empty,
     },
   });
 
   useEffect(() => {
+    setServerError(null);
     if (pen) {
       reset({
         code: pen.code,
         penType: pen.penType,
         maxCapacity: pen.maxCapacity,
-        dimensionsM2: pen.dimensionsM2 || 0,
+        dimensionsM2: pen.dimensionsM2,
         status: pen.status,
       });
     } else {
@@ -85,15 +88,21 @@ export const PenModal: React.FC<PenModalProps> = ({
         code: '',
         penType: PenType.IndividualGestationCrate,
         maxCapacity: 1,
-        dimensionsM2: 2.5,
+        dimensionsM2: undefined,
         status: PenStatus.Empty,
       });
     }
   }, [pen, reset, isOpen]);
 
   const handleFormSubmit = async (data: PenFormData) => {
-    await onSubmit({ ...data, shedId } as any);
-    onClose();
+    try {
+      setServerError(null);
+      await onSubmit({ ...data, shedId } as any);
+      onClose();
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || err?.response?.data?.detail || err?.message || 'Error al guardar el corral. Verifique los datos.';
+      setServerError(msg);
+    }
   };
 
   return (
@@ -101,7 +110,7 @@ export const PenModal: React.FC<PenModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title={isEditing ? 'Editar Corral / Jaula' : 'Nuevo Corral / Jaula'}
-      description="Unidad física mínima de alojamiento y trazabilidad"
+      description="Unidad mínima de alojamiento físico para cerdos o lotes"
       footer={
         <>
           <Button variant="outline" size="sm" onClick={onClose} disabled={isLoading}>
@@ -114,6 +123,9 @@ export const PenModal: React.FC<PenModalProps> = ({
       }
     >
       <form className="space-y-4" onSubmit={handleSubmit(handleFormSubmit)}>
+        {serverError && (
+          <Alert type="error">{serverError}</Alert>
+        )}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Input
             label="Código / Identificador"

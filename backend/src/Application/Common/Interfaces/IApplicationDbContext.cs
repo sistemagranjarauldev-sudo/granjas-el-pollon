@@ -26,5 +26,13 @@ public interface IApplicationDbContext
     // Auditoría
     DbSet<AuditLog> AuditLogs { get; }
 
+    // Plantel Porcino y Lotes
+    DbSet<SistemaGranja.Domain.Entities.Pigs.Pig> Pigs { get; }
+    DbSet<SistemaGranja.Domain.Entities.Pigs.PigMovement> PigMovements { get; }
+    DbSet<SistemaGranja.Domain.Entities.Batches.Batch> Batches { get; }
+    DbSet<SistemaGranja.Domain.Entities.Batches.BatchMovement> BatchMovements { get; }
+    DbSet<SistemaGranja.Domain.Entities.Weighings.PigWeighing> PigWeighings { get; }
+    DbSet<SistemaGranja.Domain.Entities.Weighings.BatchWeighing> BatchWeighings { get; }
+
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

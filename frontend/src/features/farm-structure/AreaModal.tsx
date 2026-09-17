@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -6,6 +6,7 @@ import { Modal } from '../../components/ui/Modal';
 import { Input } from '../../components/ui/Input';
 import { Select } from '../../components/ui/Select';
 import { Button } from '../../components/ui/Button';
+import { Alert } from '../../components/ui/Alert';
 import { Area, AreaType } from '../../types';
 
 const areaSchema = z.object({
@@ -35,6 +36,7 @@ export const AreaModal: React.FC<AreaModalProps> = ({
   isLoading,
 }) => {
   const isEditing = !!area;
+  const [serverError, setServerError] = useState<string | null>(null);
 
   const areaTypeOptions = [
     { value: AreaType.Gestation, label: 'Gestación' },
@@ -62,6 +64,7 @@ export const AreaModal: React.FC<AreaModalProps> = ({
   });
 
   useEffect(() => {
+    setServerError(null);
     if (area) {
       reset({
         code: area.code,
@@ -80,8 +83,14 @@ export const AreaModal: React.FC<AreaModalProps> = ({
   }, [area, reset, isOpen]);
 
   const handleFormSubmit = async (data: AreaFormData) => {
-    await onSubmit({ ...data, farmId } as any);
-    onClose();
+    try {
+      setServerError(null);
+      await onSubmit({ ...data, farmId } as any);
+      onClose();
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || err?.response?.data?.detail || err?.message || 'Error al guardar el área. Verifique los datos.';
+      setServerError(msg);
+    }
   };
 
   return (
@@ -102,6 +111,9 @@ export const AreaModal: React.FC<AreaModalProps> = ({
       }
     >
       <form className="space-y-4" onSubmit={handleSubmit(handleFormSubmit)}>
+        {serverError && (
+          <Alert type="error">{serverError}</Alert>
+        )}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Input
             label="Código de Área"

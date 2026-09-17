@@ -33,6 +33,14 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     // Auditoría
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
 
+    // Plantel Porcino y Lotes
+    public DbSet<SistemaGranja.Domain.Entities.Pigs.Pig> Pigs => Set<SistemaGranja.Domain.Entities.Pigs.Pig>();
+    public DbSet<SistemaGranja.Domain.Entities.Pigs.PigMovement> PigMovements => Set<SistemaGranja.Domain.Entities.Pigs.PigMovement>();
+    public DbSet<SistemaGranja.Domain.Entities.Batches.Batch> Batches => Set<SistemaGranja.Domain.Entities.Batches.Batch>();
+    public DbSet<SistemaGranja.Domain.Entities.Batches.BatchMovement> BatchMovements => Set<SistemaGranja.Domain.Entities.Batches.BatchMovement>();
+    public DbSet<SistemaGranja.Domain.Entities.Weighings.PigWeighing> PigWeighings => Set<SistemaGranja.Domain.Entities.Weighings.PigWeighing>();
+    public DbSet<SistemaGranja.Domain.Entities.Weighings.BatchWeighing> BatchWeighings => Set<SistemaGranja.Domain.Entities.Weighings.BatchWeighing>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

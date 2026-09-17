@@ -16,9 +16,10 @@ import {
   X,
   ShieldCheck,
   Sparkles,
-  GitBranch,
   FileSpreadsheet,
   Settings,
+  Scale,
+  Boxes,
 } from 'lucide-react';
 import { Badge } from '../components/ui/Badge';
 
@@ -50,6 +51,14 @@ export const MainLayout: React.FC = () => {
       ],
     },
     {
+      group: 'Producción Porcina (Fase 2)',
+      items: [
+        { name: 'Plantel Porcino', href: '/pigs', icon: Grid },
+        { name: 'Lotes de Producción', href: '/batches', icon: Boxes },
+        { name: 'Pesajes & Control GDP', href: '/weighings', icon: Scale },
+      ],
+    },
+    {
       group: 'Topología & Granja (Fase 1 Core)',
       items: [
         { name: 'Granjas', href: '/farms', icon: Building2 },
@@ -64,10 +73,8 @@ export const MainLayout: React.FC = () => {
       ],
     },
     {
-      group: 'Módulos en Desarrollo (Roadmap)',
+      group: 'Próximos Módulos',
       items: [
-        { name: 'Plantel Porcino', href: '#', icon: Grid, badge: 'Fase 2' },
-        { name: 'Lotes y Pesajes', href: '#', icon: GitBranch, badge: 'Fase 2' },
         { name: 'Reproducción & Maternidad', href: '#', icon: Warehouse, badge: 'Fase 3' },
         { name: 'Sanidad & Bioseguridad', href: '#', icon: ShieldCheck, badge: 'Fase 4' },
         { name: 'Alimentación & Inventario', href: '#', icon: Sparkles, badge: 'Fase 5' },
@@ -129,7 +136,7 @@ export const MainLayout: React.FC = () => {
               </h4>
               <div className="space-y-0.5 pt-1">
                 {section.items.map((item) => {
-                  const isActive = location.pathname === item.href;
+                  const isActive = location.pathname === item.href || (item.href !== '/' && location.pathname.startsWith(item.href));
                   const isLinkDisabled = item.href === '#';
 
                   if (isLinkDisabled) {

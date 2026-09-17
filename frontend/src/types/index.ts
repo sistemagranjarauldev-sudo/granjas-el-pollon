@@ -189,3 +189,233 @@ export interface AuditLogItem {
   userAgent?: string;
   timestamp: string;
 }
+
+// ==========================================
+// FASE 2: PLANTEL PORCINO, LOTES Y PESAJES
+// ==========================================
+
+export enum PigSex {
+  Female = 1,
+  Male = 2,
+  CastratedMale = 3,
+}
+
+export enum PigStatus {
+  Active = 1,
+  Sold = 2,
+  Dead = 3,
+  Culled = 4,
+  Transferred = 5,
+}
+
+export enum ReproductiveStatus {
+  Gilt = 1,
+  Open = 2,
+  Inseminated = 3,
+  Pregnant = 4,
+  Lactating = 5,
+  Dry = 6,
+}
+
+export enum PigEntryType {
+  BornInFarm = 1,
+  Purchased = 2,
+  Transferred = 3,
+}
+
+export enum BatchStage {
+  Lactation = 1,
+  Nursery = 2,
+  Grower = 3,
+  Finisher = 4,
+  ReplacementGilt = 5,
+}
+
+export enum BatchStatus {
+  Active = 1,
+  Closed = 2,
+  Transferred = 3,
+  Sold = 4,
+}
+
+export interface Pig {
+  id: string;
+  farmId: string;
+  identificationCode: string;
+  electronicId?: string;
+  sex: PigSex;
+  sexName: string;
+  breed: string;
+  geneticLine?: string;
+  birthDate: string;
+  entryDate: string;
+  entryType: PigEntryType;
+  entryTypeName: string;
+  sireId?: string;
+  sireCode?: string;
+  damId?: string;
+  damCode?: string;
+  currentPenId?: string;
+  penCode?: string;
+  shedName?: string;
+  areaName?: string;
+  currentBatchId?: string;
+  batchCode?: string;
+  status: PigStatus;
+  statusName: string;
+  reproductiveStatus: ReproductiveStatus;
+  reproductiveStatusName: string;
+  parity: number;
+  ageInDays: number;
+  currentWeightKg?: number;
+  lastWeighingDate?: string;
+  exitDate?: string;
+  exitReason?: string;
+  notes?: string;
+  createdAt: string;
+}
+
+export interface PigDetail extends Pig {
+  sireBreed?: string;
+  damBreed?: string;
+  movements: PigMovement[];
+  weighings: PigWeighingSummary[];
+}
+
+export interface PigMovement {
+  id: string;
+  pigId: string;
+  sourcePenId?: string;
+  sourcePenCode?: string;
+  targetPenId: string;
+  targetPenCode: string;
+  movementDate: string;
+  reason: string;
+  responsibleUserId?: string;
+  notes?: string;
+  createdAt: string;
+}
+
+export interface PigWeighingSummary {
+  id: string;
+  weighingDate: string;
+  weightKg: number;
+  ageDays: number;
+  stage: BatchStage;
+  averageDailyGainGrams?: number;
+  weightGainKg?: number;
+  daysElapsed?: number;
+  notes?: string;
+}
+
+export interface GenealogyNode {
+  id: string;
+  code: string;
+  sex: PigSex;
+  breed: string;
+  sire?: GenealogyNode | null;
+  dam?: GenealogyNode | null;
+}
+
+export interface Batch {
+  id: string;
+  farmId: string;
+  code: string;
+  name: string;
+  stage: BatchStage;
+  stageName: string;
+  startDate: string;
+  endDate?: string;
+  initialQuantity: number;
+  currentQuantity: number;
+  initialWeightKg?: number;
+  currentAverageWeightKg?: number;
+  lastWeighingDate?: string;
+  currentPenId?: string;
+  penCode?: string;
+  shedName?: string;
+  areaName?: string;
+  status: BatchStatus;
+  statusName: string;
+  daysInBatch: number;
+  notes?: string;
+  createdAt: string;
+}
+
+export interface BatchDetail extends Batch {
+  movements: BatchMovement[];
+  weighings: BatchWeighingSummary[];
+}
+
+export interface BatchMovement {
+  id: string;
+  batchId: string;
+  sourcePenId?: string;
+  sourcePenCode?: string;
+  targetPenId: string;
+  targetPenCode: string;
+  quantity: number;
+  movementDate: string;
+  reason: string;
+  responsibleUserId?: string;
+  notes?: string;
+  createdAt: string;
+}
+
+export interface BatchWeighingSummary {
+  id: string;
+  weighingDate: string;
+  stage: BatchStage;
+  sampleQuantity: number;
+  totalSampleWeightKg: number;
+  averageWeightKg: number;
+  estimatedBatchWeightKg?: number;
+  averageDailyGainGrams?: number;
+  weightGainKg?: number;
+  daysElapsed?: number;
+  notes?: string;
+}
+
+export interface PigWeighing {
+  id: string;
+  pigId: string;
+  pigCode: string;
+  weighingDate: string;
+  weightKg: number;
+  ageDays: number;
+  stage: BatchStage;
+  stageName: string;
+  averageDailyGainGrams?: number;
+  weightGainKg?: number;
+  daysElapsed?: number;
+  responsibleUserId?: string;
+  notes?: string;
+  createdAt: string;
+}
+
+export interface BatchWeighing {
+  id: string;
+  batchId: string;
+  batchCode: string;
+  batchName: string;
+  weighingDate: string;
+  stage: BatchStage;
+  stageName: string;
+  sampleQuantity: number;
+  totalSampleWeightKg: number;
+  averageWeightKg: number;
+  estimatedBatchWeightKg?: number;
+  averageDailyGainGrams?: number;
+  weightGainKg?: number;
+  daysElapsed?: number;
+  responsibleUserId?: string;
+  notes?: string;
+  createdAt: string;
+}
+
+export interface GrowthCurvePoint {
+  date: string;
+  ageDays: number;
+  weightKg: number;
+  averageDailyGainGrams?: number;
+}

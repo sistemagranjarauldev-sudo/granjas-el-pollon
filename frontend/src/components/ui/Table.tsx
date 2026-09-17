@@ -10,12 +10,13 @@ export interface Column<T> {
   className?: string;
 }
 
-export interface TableProps<T> {
-  columns: Column<T>[];
-  data: T[];
+export interface TableProps<T = any> {
+  columns?: Column<T>[];
+  data?: T[];
   isLoading?: boolean;
   emptyMessage?: string;
   className?: string;
+  children?: React.ReactNode;
   pagination?: {
     pageIndex: number;
     pageSize: number;
@@ -27,21 +28,37 @@ export interface TableProps<T> {
   };
 }
 
-export function Table<T extends { id?: string | number }>({
+export function Table<T extends { id?: string | number } = any>({
   columns,
   data,
   isLoading = false,
   emptyMessage = 'No se encontraron registros.',
   className,
   pagination,
+  children,
 }: TableProps<T>) {
+  if (children) {
+    return (
+      <div className={cn('w-full overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-sm', className)}>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm text-slate-600">
+            {children}
+          </table>
+        </div>
+      </div>
+    );
+  }
+
+  const tableColumns = columns || [];
+  const tableData = data || [];
+
   return (
     <div className={cn('w-full overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-sm', className)}>
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm text-slate-600">
           <thead className="bg-slate-50/80 text-xs font-semibold uppercase tracking-wider text-slate-600 border-b border-slate-200/70">
             <tr>
-              {columns.map((col, index) => (
+              {tableColumns.map((col, index) => (
                 <th key={index} scope="col" className={cn('px-5 py-3.5', col.className)}>
                   {col.header}
                 </th>
@@ -51,16 +68,16 @@ export function Table<T extends { id?: string | number }>({
           <tbody className="divide-y divide-slate-100">
             {isLoading ? (
               <tr>
-                <td colSpan={columns.length} className="py-12 text-center text-slate-400">
+                <td colSpan={tableColumns.length || 1} className="py-12 text-center text-slate-400">
                   <div className="inline-flex items-center gap-2">
                     <span className="w-5 h-5 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
                     <span className="text-sm font-medium">Cargando registros...</span>
                   </div>
                 </td>
               </tr>
-            ) : data.length === 0 ? (
+            ) : tableData.length === 0 ? (
               <tr>
-                <td colSpan={columns.length} className="py-12 text-center text-slate-400">
+                <td colSpan={tableColumns.length || 1} className="py-12 text-center text-slate-400">
                   <div className="flex flex-col items-center justify-center gap-2">
                     <Inbox className="w-8 h-8 text-slate-300 stroke-[1.5]" />
                     <p className="text-sm font-medium text-slate-500">{emptyMessage}</p>
@@ -68,12 +85,12 @@ export function Table<T extends { id?: string | number }>({
                 </td>
               </tr>
             ) : (
-              data.map((item, rowIdx) => (
+              tableData.map((item, rowIdx) => (
                 <tr
                   key={item.id ?? rowIdx}
                   className="hover:bg-slate-50/70 transition-colors duration-100"
                 >
-                  {columns.map((col, colIdx) => (
+                  {tableColumns.map((col, colIdx) => (
                     <td key={colIdx} className={cn('px-5 py-3.5 whitespace-nowrap', col.className)}>
                       {col.cell
                         ? col.cell(item)
@@ -122,3 +139,25 @@ export function Table<T extends { id?: string | number }>({
     </div>
   );
 }
+
+export const Thead: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className }) => (
+  <thead className={cn('bg-slate-50/80 text-xs font-semibold uppercase tracking-wider text-slate-600 border-b border-slate-200/70', className)}>
+    {children}
+  </thead>
+);
+
+export const Tbody: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className }) => (
+  <tbody className={cn('divide-y divide-slate-100', className)}>{children}</tbody>
+);
+
+export const Tr: React.FC<{ children: React.ReactNode; className?: string; onClick?: () => void }> = ({ children, className, onClick }) => (
+  <tr onClick={onClick} className={cn('hover:bg-slate-50/70 transition-colors duration-100', className)}>{children}</tr>
+);
+
+export const Th: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className }) => (
+  <th scope="col" className={cn('px-5 py-3.5', className)}>{children}</th>
+);
+
+export const Td: React.FC<{ children: React.ReactNode; className?: string; colSpan?: number }> = ({ children, className, colSpan }) => (
+  <td colSpan={colSpan} className={cn('px-5 py-3.5 whitespace-nowrap', className)}>{children}</td>
+);
