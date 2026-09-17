@@ -122,7 +122,19 @@ using (var scope = app.Services.CreateScope())
         
         if (context.Database.IsRelational())
         {
-            await context.Database.EnsureCreatedAsync();
+            var databaseCreator = Microsoft.EntityFrameworkCore.Infrastructure.AccessorExtensions.GetService<Microsoft.EntityFrameworkCore.Storage.IDatabaseCreator>(context.Database) as Microsoft.EntityFrameworkCore.Storage.IRelationalDatabaseCreator;
+            if (databaseCreator != null)
+            {
+                try
+                {
+                    _ = await context.Permissions.AnyAsync();
+                }
+                catch
+                {
+                    Log.Information("Creando tablas del sistema en la base de datos...");
+                    await databaseCreator.CreateTablesAsync();
+                }
+            }
         }
         
         await DatabaseSeeder.SeedAsync(context, passwordHasher);
