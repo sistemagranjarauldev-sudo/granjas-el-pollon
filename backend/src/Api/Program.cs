@@ -138,11 +138,6 @@ using (var scope = app.Services.CreateScope())
                 // Verificar y auto-aprovisionar tablas de la Fase 2 (Pigs, Batches, Weighings)
                 try
                 {
-                    _ = await context.Pigs.AnyAsync();
-                }
-                catch
-                {
-                    Log.Information("Aprovisionando tablas de la Fase 2 (Plantel Porcino, Lotes, Pesajes)...");
                     await context.Database.ExecuteSqlRawAsync(@"
                         CREATE TABLE IF NOT EXISTS ""Batches"" (
                             ""Id"" uuid NOT NULL PRIMARY KEY,
@@ -160,8 +155,8 @@ using (var scope = app.Services.CreateScope())
                             ""Notes"" varchar(1000) NULL,
                             ""CreatedAt"" timestamp with time zone NOT NULL,
                             ""CreatedBy"" text NULL,
-                            ""LastModifiedAt"" timestamp with time zone NULL,
-                            ""LastModifiedBy"" text NULL,
+                            ""UpdatedAt"" timestamp with time zone NULL,
+                            ""UpdatedBy"" text NULL,
                             ""IsDeleted"" boolean NOT NULL DEFAULT false,
                             ""DeletedAt"" timestamp with time zone NULL,
                             ""DeletedBy"" text NULL
@@ -190,8 +185,8 @@ using (var scope = app.Services.CreateScope())
                             ""Notes"" varchar(1000) NULL,
                             ""CreatedAt"" timestamp with time zone NOT NULL,
                             ""CreatedBy"" text NULL,
-                            ""LastModifiedAt"" timestamp with time zone NULL,
-                            ""LastModifiedBy"" text NULL,
+                            ""UpdatedAt"" timestamp with time zone NULL,
+                            ""UpdatedBy"" text NULL,
                             ""IsDeleted"" boolean NOT NULL DEFAULT false,
                             ""DeletedAt"" timestamp with time zone NULL,
                             ""DeletedBy"" text NULL
@@ -208,8 +203,8 @@ using (var scope = app.Services.CreateScope())
                             ""Notes"" varchar(500) NULL,
                             ""CreatedAt"" timestamp with time zone NOT NULL,
                             ""CreatedBy"" text NULL,
-                            ""LastModifiedAt"" timestamp with time zone NULL,
-                            ""LastModifiedBy"" text NULL,
+                            ""UpdatedAt"" timestamp with time zone NULL,
+                            ""UpdatedBy"" text NULL,
                             ""IsDeleted"" boolean NOT NULL DEFAULT false,
                             ""DeletedAt"" timestamp with time zone NULL,
                             ""DeletedBy"" text NULL
@@ -227,8 +222,8 @@ using (var scope = app.Services.CreateScope())
                             ""Notes"" varchar(500) NULL,
                             ""CreatedAt"" timestamp with time zone NOT NULL,
                             ""CreatedBy"" text NULL,
-                            ""LastModifiedAt"" timestamp with time zone NULL,
-                            ""LastModifiedBy"" text NULL,
+                            ""UpdatedAt"" timestamp with time zone NULL,
+                            ""UpdatedBy"" text NULL,
                             ""IsDeleted"" boolean NOT NULL DEFAULT false,
                             ""DeletedAt"" timestamp with time zone NULL,
                             ""DeletedBy"" text NULL
@@ -239,14 +234,17 @@ using (var scope = app.Services.CreateScope())
                             ""PigId"" uuid NOT NULL REFERENCES ""Pigs""(""Id"") ON DELETE CASCADE,
                             ""WeighingDate"" timestamp with time zone NOT NULL,
                             ""WeightKg"" numeric(8,2) NOT NULL,
+                            ""AgeDays"" integer NOT NULL DEFAULT 0,
+                            ""Stage"" integer NOT NULL DEFAULT 2,
                             ""AverageDailyGainGrams"" numeric(8,2) NULL,
                             ""WeightGainKg"" numeric(8,2) NULL,
+                            ""DaysElapsed"" integer NULL,
                             ""ResponsibleUserId"" varchar(100) NULL,
                             ""Notes"" varchar(500) NULL,
                             ""CreatedAt"" timestamp with time zone NOT NULL,
                             ""CreatedBy"" text NULL,
-                            ""LastModifiedAt"" timestamp with time zone NULL,
-                            ""LastModifiedBy"" text NULL,
+                            ""UpdatedAt"" timestamp with time zone NULL,
+                            ""UpdatedBy"" text NULL,
                             ""IsDeleted"" boolean NOT NULL DEFAULT false,
                             ""DeletedAt"" timestamp with time zone NULL,
                             ""DeletedBy"" text NULL
@@ -256,27 +254,52 @@ using (var scope = app.Services.CreateScope())
                             ""Id"" uuid NOT NULL PRIMARY KEY,
                             ""BatchId"" uuid NOT NULL REFERENCES ""Batches""(""Id"") ON DELETE CASCADE,
                             ""WeighingDate"" timestamp with time zone NOT NULL,
+                            ""Stage"" integer NOT NULL DEFAULT 2,
                             ""SampleQuantity"" integer NOT NULL,
                             ""TotalSampleWeightKg"" numeric(10,2) NOT NULL,
                             ""AverageWeightKg"" numeric(8,2) NOT NULL,
                             ""EstimatedBatchWeightKg"" numeric(12,2) NULL,
                             ""AverageDailyGainGrams"" numeric(8,2) NULL,
                             ""WeightGainKg"" numeric(8,2) NULL,
+                            ""DaysElapsed"" integer NULL,
                             ""ResponsibleUserId"" varchar(100) NULL,
                             ""Notes"" varchar(500) NULL,
                             ""CreatedAt"" timestamp with time zone NOT NULL,
                             ""CreatedBy"" text NULL,
-                            ""LastModifiedAt"" timestamp with time zone NULL,
-                            ""LastModifiedBy"" text NULL,
+                            ""UpdatedAt"" timestamp with time zone NULL,
+                            ""UpdatedBy"" text NULL,
                             ""IsDeleted"" boolean NOT NULL DEFAULT false,
                             ""DeletedAt"" timestamp with time zone NULL,
                             ""DeletedBy"" text NULL
                         );
 
+                        -- Asegurar columnas UpdatedAt y UpdatedBy en tablas existentes
+                        ALTER TABLE ""Pigs"" ADD COLUMN IF NOT EXISTS ""UpdatedAt"" timestamp with time zone NULL;
+                        ALTER TABLE ""Pigs"" ADD COLUMN IF NOT EXISTS ""UpdatedBy"" text NULL;
+                        ALTER TABLE ""Batches"" ADD COLUMN IF NOT EXISTS ""UpdatedAt"" timestamp with time zone NULL;
+                        ALTER TABLE ""Batches"" ADD COLUMN IF NOT EXISTS ""UpdatedBy"" text NULL;
+                        ALTER TABLE ""PigMovements"" ADD COLUMN IF NOT EXISTS ""UpdatedAt"" timestamp with time zone NULL;
+                        ALTER TABLE ""PigMovements"" ADD COLUMN IF NOT EXISTS ""UpdatedBy"" text NULL;
+                        ALTER TABLE ""BatchMovements"" ADD COLUMN IF NOT EXISTS ""UpdatedAt"" timestamp with time zone NULL;
+                        ALTER TABLE ""BatchMovements"" ADD COLUMN IF NOT EXISTS ""UpdatedBy"" text NULL;
+                        ALTER TABLE ""PigWeighings"" ADD COLUMN IF NOT EXISTS ""UpdatedAt"" timestamp with time zone NULL;
+                        ALTER TABLE ""PigWeighings"" ADD COLUMN IF NOT EXISTS ""UpdatedBy"" text NULL;
+                        ALTER TABLE ""PigWeighings"" ADD COLUMN IF NOT EXISTS ""AgeDays"" integer NOT NULL DEFAULT 0;
+                        ALTER TABLE ""PigWeighings"" ADD COLUMN IF NOT EXISTS ""Stage"" integer NOT NULL DEFAULT 2;
+                        ALTER TABLE ""PigWeighings"" ADD COLUMN IF NOT EXISTS ""DaysElapsed"" integer NULL;
+                        ALTER TABLE ""BatchWeighings"" ADD COLUMN IF NOT EXISTS ""UpdatedAt"" timestamp with time zone NULL;
+                        ALTER TABLE ""BatchWeighings"" ADD COLUMN IF NOT EXISTS ""UpdatedBy"" text NULL;
+                        ALTER TABLE ""BatchWeighings"" ADD COLUMN IF NOT EXISTS ""Stage"" integer NOT NULL DEFAULT 2;
+                        ALTER TABLE ""BatchWeighings"" ADD COLUMN IF NOT EXISTS ""DaysElapsed"" integer NULL;
+
                         CREATE UNIQUE INDEX IF NOT EXISTS ""IX_Pigs_FarmId_IdentificationCode"" ON ""Pigs"" (""FarmId"", ""IdentificationCode"") WHERE ""IsDeleted"" = false;
                         CREATE UNIQUE INDEX IF NOT EXISTS ""IX_Batches_FarmId_Code"" ON ""Batches"" (""FarmId"", ""Code"") WHERE ""IsDeleted"" = false;
                     ");
-                    Log.Information("Tablas de la Fase 2 aprovisionadas exitosamente.");
+                    Log.Information("Tablas de la Fase 2 verificadas y actualizadas exitosamente.");
+                }
+                catch (Exception ex)
+                {
+                    Log.Warning(ex, "Nota al verificar tablas de Fase 2: {Message}", ex.Message);
                 }
             }
         }
