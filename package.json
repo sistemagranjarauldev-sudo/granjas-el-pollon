@@ -6,6 +6,10 @@
   "workspaces": [
     "frontend"
   ],
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "^4.63.3",
+    "@rollup/rollup-win32-x64-msvc": "^4.63.3"
+  },
   "scripts": {
     "dev": "npm --prefix frontend run dev",
     "dev:frontend": "npm --prefix frontend run dev",

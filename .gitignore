@@ -40,6 +40,8 @@ dist-ssr/
 .npm
 .eslintcache
 *.tsbuildinfo
+package-lock.json
+
 
 # OS Files
 .DS_Store
