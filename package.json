@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "description": "Sistema Integral de Gestión para Granja Porcina",
+  "workspaces": [
+    "frontend"
+  ],
   "scripts": {
     "dev": "npm --prefix frontend run dev",
     "dev:frontend": "npm --prefix frontend run dev",
@@ -13,3 +16,4 @@
     "test:backend": "dotnet test backend/SistemaGranja.sln"
   }
 }
+
