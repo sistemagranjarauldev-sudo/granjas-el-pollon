@@ -1,19 +1,21 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /app
 
-COPY backend/SistemaGranja.sln ./backend/
+# Copy csproj files and restore dependencies
 COPY backend/src/Domain/Domain.csproj ./backend/src/Domain/
 COPY backend/src/Shared/Shared.csproj ./backend/src/Shared/
 COPY backend/src/Application/Application.csproj ./backend/src/Application/
 COPY backend/src/Infrastructure/Infrastructure.csproj ./backend/src/Infrastructure/
 COPY backend/src/Api/Api.csproj ./backend/src/Api/
 
-RUN dotnet restore ./backend/SistemaGranja.sln
+RUN dotnet restore ./backend/src/Api/Api.csproj
 
-COPY backend/ ./backend/
+# Copy src files and build
+COPY backend/src/ ./backend/src/
 
 RUN dotnet publish ./backend/src/Api/Api.csproj -c Release -o /app/publish /p:UseAppHost=false
 
+# Runtime stage
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
 COPY --from=build /app/publish .
