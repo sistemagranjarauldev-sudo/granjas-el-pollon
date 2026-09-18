@@ -245,8 +245,8 @@ public class PigsService : IPigsService
             Sex = dto.Sex,
             Breed = dto.Breed.Trim(),
             GeneticLine = dto.GeneticLine?.Trim(),
-            BirthDate = dto.BirthDate,
-            EntryDate = dto.EntryDate,
+            BirthDate = DateTime.SpecifyKind(dto.BirthDate, DateTimeKind.Utc),
+            EntryDate = DateTime.SpecifyKind(dto.EntryDate, DateTimeKind.Utc),
             EntryType = dto.EntryType,
             SireId = dto.SireId,
             DamId = dto.DamId,
@@ -265,7 +265,7 @@ public class PigsService : IPigsService
                 PigId = pig.Id,
                 SourcePenId = null,
                 TargetPenId = dto.CurrentPenId.Value,
-                MovementDate = dto.EntryDate,
+                MovementDate = DateTime.SpecifyKind(dto.EntryDate, DateTimeKind.Utc),
                 Reason = "Ingreso inicial a la granja",
                 ResponsibleUserId = _currentUserService.UserId
             });
@@ -274,12 +274,11 @@ public class PigsService : IPigsService
         _context.Pigs.Add(pig);
         await _context.SaveChangesAsync(cancellationToken);
 
-        return await GetPigByIdAsync(pig.Id, cancellationToken).ContinueWith(t => 
-        {
-            var res = t.Result;
-            if (!res.IsSuccess) return Result<PigDto>.Failure(res.Error);
-            return Result<PigDto>.Success(MapDetailToDto(res.Value!));
-        }, cancellationToken);
+        var detailResult = await GetPigByIdAsync(pig.Id, cancellationToken);
+        if (!detailResult.IsSuccess)
+            return Result<PigDto>.Failure(detailResult.Error);
+
+        return Result<PigDto>.Success(MapDetailToDto(detailResult.Value!));
     }
 
     public async Task<Result<PigDto>> UpdatePigAsync(Guid id, UpdatePigDto dto, CancellationToken cancellationToken = default)
@@ -311,24 +310,23 @@ public class PigsService : IPigsService
         pig.ElectronicId = dto.ElectronicId?.Trim();
         pig.Breed = dto.Breed.Trim();
         pig.GeneticLine = dto.GeneticLine?.Trim();
-        pig.BirthDate = dto.BirthDate;
+        pig.BirthDate = DateTime.SpecifyKind(dto.BirthDate, DateTimeKind.Utc);
         pig.SireId = dto.SireId;
         pig.DamId = dto.DamId;
         pig.Status = dto.Status;
         pig.ReproductiveStatus = dto.ReproductiveStatus;
         pig.Parity = dto.Parity;
-        pig.ExitDate = dto.ExitDate;
+        pig.ExitDate = dto.ExitDate.HasValue ? DateTime.SpecifyKind(dto.ExitDate.Value, DateTimeKind.Utc) : null;
         pig.ExitReason = dto.ExitReason?.Trim();
         pig.Notes = dto.Notes?.Trim();
 
         await _context.SaveChangesAsync(cancellationToken);
 
-        return await GetPigByIdAsync(pig.Id, cancellationToken).ContinueWith(t => 
-        {
-            var res = t.Result;
-            if (!res.IsSuccess) return Result<PigDto>.Failure(res.Error);
-            return Result<PigDto>.Success(MapDetailToDto(res.Value!));
-        }, cancellationToken);
+        var detailResult = await GetPigByIdAsync(pig.Id, cancellationToken);
+        if (!detailResult.IsSuccess)
+            return Result<PigDto>.Failure(detailResult.Error);
+
+        return Result<PigDto>.Success(MapDetailToDto(detailResult.Value!));
     }
 
     public async Task<Result> MovePigAsync(Guid id, MovePigDto dto, CancellationToken cancellationToken = default)

@@ -7,8 +7,10 @@ import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Table, Column } from '../../components/ui/Table';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
+import { Alert } from '../../components/ui/Alert';
 import { UserModal } from './UserModal';
-import { Plus, Edit2, Trash2, Search } from 'lucide-react';
+import { ResetPasswordModal } from './ResetPasswordModal';
+import { Plus, Edit2, Trash2, Search, KeyRound } from 'lucide-react';
 import { Input } from '../../components/ui/Input';
 import { formatDateTime } from '../../utils/formatters';
 
@@ -22,6 +24,8 @@ export const UsersPage: React.FC = () => {
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserItem | null>(null);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [isResetPasswordOpen, setIsResetPasswordOpen] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // Queries
   const { data, isLoading } = useQuery({
@@ -45,12 +49,20 @@ export const UsersPage: React.FC = () => {
   // Mutations
   const createMutation = useMutation({
     mutationFn: (data: any) => userService.createUser(data),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['users'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      setSuccessMessage('Usuario creado exitosamente.');
+      setTimeout(() => setSuccessMessage(null), 4000);
+    },
   });
 
   const updateMutation = useMutation({
     mutationFn: (data: any) => userService.updateUser(selectedUser!.id, data),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['users'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      setSuccessMessage('Usuario actualizado exitosamente.');
+      setTimeout(() => setSuccessMessage(null), 4000);
+    },
   });
 
   const toggleStatusMutation = useMutation({
@@ -63,6 +75,17 @@ export const UsersPage: React.FC = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
       setIsDeleteOpen(false);
+      setSuccessMessage('Usuario eliminado correctamente.');
+      setTimeout(() => setSuccessMessage(null), 4000);
+    },
+  });
+
+  const resetPasswordMutation = useMutation({
+    mutationFn: ({ id, newPassword }: { id: string; newPassword: string }) =>
+      userService.resetPassword(id, newPassword),
+    onSuccess: () => {
+      setSuccessMessage(`Contraseña actualizada exitosamente para ${selectedUser?.fullName || 'el usuario'}.`);
+      setTimeout(() => setSuccessMessage(null), 5000);
     },
   });
 
@@ -72,6 +95,11 @@ export const UsersPage: React.FC = () => {
     } else {
       await createMutation.mutateAsync(formData);
     }
+  };
+
+  const handleResetPasswordSubmit = async (newPassword: string) => {
+    if (!selectedUser) return;
+    await resetPasswordMutation.mutateAsync({ id: selectedUser.id, newPassword });
   };
 
   const columns: Column<UserItem>[] = [
@@ -156,6 +184,17 @@ export const UsersPage: React.FC = () => {
           <Button
             variant="ghost"
             size="sm"
+            title="Restablecer Contraseña"
+            onClick={() => {
+              setSelectedUser(user);
+              setIsResetPasswordOpen(true);
+            }}
+            icon={<KeyRound className="w-4 h-4 text-amber-600 hover:text-amber-700" />}
+          />
+          <Button
+            variant="ghost"
+            size="sm"
+            title="Editar Usuario"
             onClick={() => {
               setSelectedUser(user);
               setIsUserModalOpen(true);
@@ -166,6 +205,7 @@ export const UsersPage: React.FC = () => {
             <Button
               variant="ghost"
               size="sm"
+              title="Eliminar Usuario"
               onClick={() => {
                 setSelectedUser(user);
                 setIsDeleteOpen(true);
@@ -199,6 +239,13 @@ export const UsersPage: React.FC = () => {
           Nuevo Usuario
         </Button>
       </div>
+
+      {/* Success Notification */}
+      {successMessage && (
+        <Alert type="success">
+          {successMessage}
+        </Alert>
+      )}
 
       {/* Search */}
       <div className="flex items-center gap-4 max-w-md">
@@ -241,6 +288,14 @@ export const UsersPage: React.FC = () => {
         isLoading={createMutation.isPending || updateMutation.isPending}
       />
 
+      <ResetPasswordModal
+        isOpen={isResetPasswordOpen}
+        onClose={() => setIsResetPasswordOpen(false)}
+        onSubmit={handleResetPasswordSubmit}
+        user={selectedUser}
+        isLoading={resetPasswordMutation.isPending}
+      />
+
       {selectedUser && (
         <ConfirmDialog
           isOpen={isDeleteOpen}
@@ -254,3 +309,4 @@ export const UsersPage: React.FC = () => {
     </div>
   );
 };
+

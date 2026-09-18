@@ -142,7 +142,7 @@ public class WeighingsService : IWeighingsService
         var weighing = new PigWeighing
         {
             PigId = dto.PigId,
-            WeighingDate = dto.WeighingDate,
+            WeighingDate = DateTime.SpecifyKind(dto.WeighingDate, DateTimeKind.Utc),
             WeightKg = dto.WeightKg,
             AgeDays = ageInDays,
             Stage = dto.Stage,
@@ -189,7 +189,7 @@ public class WeighingsService : IWeighingsService
         var weighing = new BatchWeighing
         {
             BatchId = dto.BatchId,
-            WeighingDate = dto.WeighingDate,
+            WeighingDate = DateTime.SpecifyKind(dto.WeighingDate, DateTimeKind.Utc),
             Stage = dto.Stage,
             SampleQuantity = dto.SampleQuantity,
             TotalSampleWeightKg = dto.TotalSampleWeightKg,

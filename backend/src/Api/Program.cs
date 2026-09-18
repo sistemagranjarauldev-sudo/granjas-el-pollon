@@ -11,7 +11,11 @@ using SistemaGranja.Infrastructure;
 using SistemaGranja.Infrastructure.Persistence;
 using SistemaGranja.Infrastructure.Persistence.Seed;
 
+// Soporte universal para timestamps UTC y Unspecified en PostgreSQL / Npgsql
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
 var builder = WebApplication.CreateBuilder(args);
+
 
 // 1. Configuración de Serilog
 Log.Logger = new LoggerConfiguration()

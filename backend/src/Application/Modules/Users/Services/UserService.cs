@@ -170,6 +170,18 @@ public class UserService : IUserService
         return Result.Success();
     }
 
+    public async Task<Result> ResetPasswordAsync(Guid id, ResetPasswordDto dto, CancellationToken cancellationToken = default)
+    {
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id && !u.IsDeleted, cancellationToken);
+        if (user == null)
+            return Result.Failure(Error.NotFound);
+
+        user.PasswordHash = _passwordHasher.HashPassword(dto.NewPassword);
+        await _context.SaveChangesAsync(cancellationToken);
+
+        return Result.Success();
+    }
+
     public async Task<Result<IReadOnlyList<RoleDto>>> GetRolesAsync(CancellationToken cancellationToken = default)
     {
         var roles = await _context.Roles

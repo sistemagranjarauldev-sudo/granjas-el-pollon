@@ -34,6 +34,11 @@ export const userService = {
     return res.data;
   },
 
+  resetPassword: async (id: string, newPassword: string): Promise<ApiResponse> => {
+    const res = await api.post<ApiResponse>(`/users/${id}/reset-password`, { newPassword });
+    return res.data;
+  },
+
   getRoles: async (): Promise<ApiResponse<RoleItem[]>> => {
     const res = await api.get<ApiResponse<RoleItem[]>>('/roles');
     return res.data;

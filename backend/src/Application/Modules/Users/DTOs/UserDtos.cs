@@ -58,3 +58,8 @@ public record UserFarmAssignmentDto(
     string FarmName,
     bool IsDefault
 );
+
+public record ResetPasswordDto(
+    string NewPassword
+);
+

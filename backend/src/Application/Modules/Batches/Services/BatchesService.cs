@@ -182,7 +182,7 @@ public class BatchesService : IBatchesService
             Code = dto.Code.Trim().ToUpper(),
             Name = dto.Name.Trim(),
             Stage = dto.Stage,
-            StartDate = dto.StartDate,
+            StartDate = DateTime.SpecifyKind(dto.StartDate, DateTimeKind.Utc),
             InitialQuantity = dto.InitialQuantity,
             CurrentQuantity = dto.InitialQuantity,
             InitialWeightKg = dto.InitialWeightKg,
@@ -199,7 +199,7 @@ public class BatchesService : IBatchesService
                 SourcePenId = null,
                 TargetPenId = dto.CurrentPenId.Value,
                 Quantity = dto.InitialQuantity,
-                MovementDate = dto.StartDate,
+                MovementDate = DateTime.SpecifyKind(dto.StartDate, DateTimeKind.Utc),
                 Reason = "Apertura e ingreso inicial de lote",
                 ResponsibleUserId = _currentUserService.UserId
             });
@@ -208,12 +208,11 @@ public class BatchesService : IBatchesService
         _context.Batches.Add(batch);
         await _context.SaveChangesAsync(cancellationToken);
 
-        return await GetBatchByIdAsync(batch.Id, cancellationToken).ContinueWith(t =>
-        {
-            var res = t.Result;
-            if (!res.IsSuccess) return Result<BatchDto>.Failure(res.Error);
-            return Result<BatchDto>.Success(MapDetailToDto(res.Value!));
-        }, cancellationToken);
+        var detailResult = await GetBatchByIdAsync(batch.Id, cancellationToken);
+        if (!detailResult.IsSuccess)
+            return Result<BatchDto>.Failure(detailResult.Error);
+
+        return Result<BatchDto>.Success(MapDetailToDto(detailResult.Value!));
     }
 
     public async Task<Result<BatchDto>> UpdateBatchAsync(Guid id, UpdateBatchDto dto, CancellationToken cancellationToken = default)
@@ -238,17 +237,16 @@ public class BatchesService : IBatchesService
         batch.Name = dto.Name.Trim();
         batch.Stage = dto.Stage;
         batch.Status = dto.Status;
-        batch.EndDate = dto.EndDate;
+        batch.EndDate = dto.EndDate.HasValue ? DateTime.SpecifyKind(dto.EndDate.Value, DateTimeKind.Utc) : null;
         batch.Notes = dto.Notes?.Trim();
 
         await _context.SaveChangesAsync(cancellationToken);
 
-        return await GetBatchByIdAsync(batch.Id, cancellationToken).ContinueWith(t =>
-        {
-            var res = t.Result;
-            if (!res.IsSuccess) return Result<BatchDto>.Failure(res.Error);
-            return Result<BatchDto>.Success(MapDetailToDto(res.Value!));
-        }, cancellationToken);
+        var detailResult = await GetBatchByIdAsync(batch.Id, cancellationToken);
+        if (!detailResult.IsSuccess)
+            return Result<BatchDto>.Failure(detailResult.Error);
+
+        return Result<BatchDto>.Success(MapDetailToDto(detailResult.Value!));
     }
 
     public async Task<Result> MoveBatchAsync(Guid id, MoveBatchDto dto, CancellationToken cancellationToken = default)

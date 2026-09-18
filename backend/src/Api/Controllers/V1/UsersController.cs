@@ -69,4 +69,15 @@ public class UsersController : ApiControllerBase
         var result = await _userService.DeleteUserAsync(id, cancellationToken);
         return HandleResult(result);
     }
+
+    [HttpPost("{id:guid}/reset-password")]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ResetPassword(Guid id, [FromBody] ResetPasswordDto dto, CancellationToken cancellationToken)
+    {
+        var result = await _userService.ResetPasswordAsync(id, dto, cancellationToken);
+        return HandleResult(result);
+    }
 }
+

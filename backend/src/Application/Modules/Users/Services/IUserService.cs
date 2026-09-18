@@ -12,6 +12,7 @@ public interface IUserService
     Task<Result<UserDto>> UpdateUserAsync(Guid id, UpdateUserDto dto, CancellationToken cancellationToken = default);
     Task<Result> ToggleUserStatusAsync(Guid id, CancellationToken cancellationToken = default);
     Task<Result> DeleteUserAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<Result> ResetPasswordAsync(Guid id, ResetPasswordDto dto, CancellationToken cancellationToken = default);
 
     // Roles y Permisos
     Task<Result<IReadOnlyList<RoleDto>>> GetRolesAsync(CancellationToken cancellationToken = default);
