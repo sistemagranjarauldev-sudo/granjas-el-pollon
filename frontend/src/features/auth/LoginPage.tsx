@@ -7,7 +7,7 @@ import { useAuth } from './AuthContext';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import { Alert } from '../../components/ui/Alert';
-import { ShieldCheck, User, Lock, Sparkles } from 'lucide-react';
+import { ShieldCheck, User, Lock, Sparkles, Eye, EyeOff } from 'lucide-react';
 
 const loginSchema = z.object({
   identifier: z.string().min(1, 'El usuario o correo es obligatorio'),
@@ -21,6 +21,7 @@ export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState<boolean>(false);
 
   const from = location.state?.from?.pathname || '/';
 
@@ -92,12 +93,24 @@ export const LoginPage: React.FC = () => {
 
             <Input
               label="Contraseña"
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               placeholder="••••••••"
               leftIcon={<Lock className="w-4 h-4" />}
+              rightIcon={
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="p-1 text-slate-400 hover:text-slate-600 focus:outline-none transition-colors"
+                  tabIndex={-1}
+                  title={showPassword ? 'Ocultar contraseña' : 'Ver contraseña'}
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              }
               error={errors.password?.message}
               {...register('password')}
             />
+
 
             <div className="pt-2">
               <Button

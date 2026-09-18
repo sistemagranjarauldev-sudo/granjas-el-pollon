@@ -6,10 +6,11 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   error?: string;
   helperText?: string;
   leftIcon?: React.ReactNode;
+  rightIcon?: React.ReactNode;
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ className, label, error, helperText, leftIcon, id, ...props }, ref) => {
+  ({ className, label, error, helperText, leftIcon, rightIcon, id, ...props }, ref) => {
     const inputId = id || (label ? label.toLowerCase().replace(/\s+/g, '-') : undefined);
 
     return (
@@ -32,7 +33,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
               'block w-full rounded-lg border text-sm transition-colors duration-150',
               'placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-offset-0',
               leftIcon ? 'pl-9' : 'pl-3.5',
-              'pr-3.5 py-2',
+              rightIcon ? 'pr-10' : 'pr-3.5',
+              'py-2',
               error
                 ? 'border-rose-300 bg-rose-50/30 text-rose-900 focus:border-rose-500 focus:ring-rose-500/20'
                 : 'border-slate-300 bg-white text-slate-900 hover:border-slate-400 focus:border-emerald-500 focus:ring-emerald-500/20',
@@ -40,6 +42,11 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             )}
             {...props}
           />
+          {rightIcon && (
+            <div className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400">
+              {rightIcon}
+            </div>
+          )}
         </div>
         {error ? (
           <p className="text-xs font-medium text-rose-600 animate-fadeIn">{error}</p>
@@ -50,5 +57,6 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     );
   }
 );
+
 
 Input.displayName = 'Input';
