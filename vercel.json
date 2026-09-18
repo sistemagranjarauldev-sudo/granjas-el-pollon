@@ -1,6 +1,6 @@
 {
-  "installCommand": "npm install && npm --prefix frontend install @rollup/rollup-linux-x64-gnu",
-  "buildCommand": "npm --prefix frontend run build",
+  "installCommand": "cd frontend && npm install",
+  "buildCommand": "cd frontend && npm run build",
   "outputDirectory": "frontend/dist",
   "rewrites": [
     {
@@ -9,4 +9,5 @@
     }
   ]
 }
+
 
